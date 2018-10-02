@@ -1,6 +1,6 @@
 # Spring Boot Cloud example
 
-Eureka : Service discovery and registry
+## Netflix Eureka : Service discovery and registry
 
  Application's related properties are defined in individual properties file or hardcoded into code. If a change is required then it becomes very cumbersome to adapt the changes if there are multiple applications
  
@@ -37,3 +37,21 @@ Updates to Consumer (Service Discovery)
 			
 			String baseUrl=serviceInstance.getUri().toString() + "/employee";
  6. Restart the producer application. An "employee-consumer" application will be registered now at Eureka server "http://localhost:8090/" and this should be able to discover producer via the unique id
+ 
+##Netflix Ribbon + Eureka : load balancing and Service discovery and registry
+
+Used to obtain Load balancing at client level without depending on dedicated HW like F5 load balancers
+
+Changes to employee-producer (Which needs to be highly available)
+ 1. Different port numbers for each producer and "eureka.instance.instanceId" to get unique application name in Eureka server
+	server.port=8093
+	eureka.client.serviceUrl.defaultZone=http://localhost:8090/eureka
+	eureka.instance.instanceId=${spring.application.name}:${random.value}
+ 2. Run the two applications in parallel and verify multiple producers in Eureka server
+ 
+Changes to employee-consumer (Which is going to invoker producers without knowing a specific producer)
+ 1. Add dependency "spring-cloud-starter-ribbon"  
+ 2. Autowire LoadBalancerClient annotation in the consumer (Earlier it was DiscoveryClient)
+ 3. Update the controller code to get the URI and restart the consumer
+ 
+Consumer picks any available producer for making request. 
