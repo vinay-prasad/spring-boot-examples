@@ -38,7 +38,7 @@ Updates to Consumer (Service Discovery)
 			String baseUrl=serviceInstance.getUri().toString() + "/employee";
  6. Restart the producer application. An "employee-consumer" application will be registered now at Eureka server "http://localhost:8090/" and this should be able to discover producer via the unique id
  
-##Netflix Ribbon + Eureka : load balancing and Service discovery and registry
+## Netflix Ribbon + Eureka : load balancing and Service discovery and registry
 
 Used to obtain Load balancing at client level without depending on dedicated HW like F5 load balancers
 
