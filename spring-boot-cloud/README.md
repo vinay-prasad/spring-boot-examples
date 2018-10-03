@@ -29,13 +29,15 @@ Updates to Consumer (Service Discovery)
  3. add application.property to refer the eureka server running on 8090 "eureka.client.serviceUrl.defaultZone=http://localhost:8090/eureka"
  4. Create a bootstrap.properties to provice a unique name to this application and restart it "spring.application.name=employee-consumer"
  5. Add below code to find the URI of producer using DiscoveryClient and use the URL to invoke producer
-	 @Autowired
+	 
+	 	@Autowired
 		DiscoveryClient discoveryClient;
 		public void getEmployee() throws RestClientException, IOException {
+		
 			List<ServiceInstance> instances=discoveryClient.getInstances("employee-producer");
-			ServiceInstance serviceInstance=instances.get(0);
-			
+			ServiceInstance serviceInstance=instances.get(0);			
 			String baseUrl=serviceInstance.getUri().toString() + "/employee";
+			
  6. Restart the producer application. An "employee-consumer" application will be registered now at Eureka server "http://localhost:8090/" and this should be able to discover producer via the unique id
  
 ## Netflix Ribbon + Eureka : load balancing and Service discovery and registry
@@ -52,6 +54,38 @@ Changes to employee-producer (Which needs to be highly available)
 Changes to employee-consumer (Which is going to invoker producers without knowing a specific producer)
  1. Add dependency "spring-cloud-starter-ribbon"  
  2. Autowire LoadBalancerClient annotation in the consumer (Earlier it was DiscoveryClient)
- 3. Update the controller code to get the URI and restart the consumer
+ 3. Update the controller code to get the URI and restart the consumer		
  
-Consumer picks any available producer for making request. 
+		@Autowired
+		private LoadBalancerClient loadBalancer;
+		public void getEmployee() throws RestClientException, IOException {
+			ServiceInstance serviceInstance=loadBalancer.choose("employee-producer");
+			System.out.println(serviceInstance.getUri());
+			String baseUrl=serviceInstance.getUri().toString() + "/employee"; 
+ 
+Consumer picks any available producer for making request.
+
+
+## Netflix Hysterix : FallBack and CircuitBreaker
+	Hystrix is a latency and fault tolerance library designed to 
+	- isolate points of access to remote systems,services and 3rd party libraries, 
+	- stop cascading failure and enable resilience in complex distributed systems where failure is inevitable 
+ Two features of Hystrix-
+ 1. Fallback method (Like a try catch, where on an exception a controlled operation is performed)
+ 2. Circuit Breaker
+ 
+ ### Fallback method
+     To implement Fallback method, the producer needs to be updated with few simple changes
+     1. add hystrix depedency in pom "spring-cloud-starter-hystrix"
+     2. add annotation to SpringBootApplication @EnableCircuitBreaker
+     3. update the controller to decalare and define Fallback method
+     
+     	@RequestMapping(value = "/employee", method = RequestMethod.GET)
+		@HystrixCommand(fallbackMethod = "getDataFallBack")
+		public Employee firstPage() {
+		// actual method
+		}
+		
+		public Employee getDataFallBack() {
+		// fallback method
+		}
