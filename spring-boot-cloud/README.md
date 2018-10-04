@@ -101,3 +101,27 @@
 		public Employee getDataFallBack() {
 		// fallback method
 		}
+		
+## Spring cloud config : Centrally manage all the common/global/shared config
+	Our producer consumer example has common configs which can be shared globally. 
+	Spring cloud config provides an efficient way to achieve this
+	
+	To implement this it requires to create a new service employee-config-server and 
+	few updates in the producer-consumer application.properties and pom files
+	
+	Changes to the employee-config-server
+	1. add dependency spring-cloud-config-server
+	2. create common application.properties under src/main/resources/common-config to hold all common properties e.g.
+		eureka.client.serviceUrl.defaultZone=http://localhost:8090/eureka
+	3. update the actual application.properties to use native/git based config
+		spring.profiles.active=native
+		server.port=8888
+		spring.cloud.config.server.native.search-locations=classpath:/common-config
+	4. update pom to enable filtering to read src/main/resources/common-config/application.properties
+	5. enable config server by using annotation @EnableConfigServer
+	
+	Changes to the producer-consumer
+	1. add dependency spring-cloud-starter-config and remove/update application.property for 
+		#eureka.client.serviceUrl.defaultZone=http://localhost:8090/eureka
+	
+	For git based cloud config, path of repo needs to be mentioned in config-server's application properties
