@@ -125,3 +125,30 @@
 		#eureka.client.serviceUrl.defaultZone=http://localhost:8090/eureka
 	
 	For git based cloud config, path of repo needs to be mentioned in config-server's application properties
+	
+## Spring zuul : Provides a firewall/proxy/gateway type of architecture
+	Zuul acts as front door for all the requests and routes is to backend systems.
+	
+	1.	employee producer
+	2.	Eureka Server
+	3.	employee-zuul-service
+	4.	employee consumer-zuul
+		
+	implement zuul server
+	-	add dependency spring-cloud-starter-zuul
+	-	add classes for 4 types of Zuul supported filters Pre, Post, Route, Error
+	-	add annotation @EnableZuulProxy to the sprinboot application class
+	-	add below application and bootstrap properties
+		
+		
+		zuul.routes.producer.url=http://localhost:8091
+		eureka.client.serviceUrl.defaultZone=http://localhost:8090/eureka
+		server.port=8079
+	
+		spring.application.name=employee-zuul-service
+	
+	updates to consumer (employee-consumer-zuul)
+	-	change the producer's name with zuul server's name "employee-zuul-service"
+	-	update the API url from /employee to /producer/employee
+	
+	Restart applications eureka server, producer, zuul server, consumer-zuul	
